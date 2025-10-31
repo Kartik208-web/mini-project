@@ -64,3 +64,4 @@ document.addEventListener('DOMContentLoaded', function() {
     updateUserInterface();
   }
 });
+document.querySelectorAll("#donate").forEach(btn =>btn.onclick =() => location.href = "../mini project pg 3/pg3.html");
