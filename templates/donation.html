@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daansetu - Donate</title>
+  <style>
+    /* CBDC Payment Success Animation */
+    .checkmark {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 4px solid #10B981;
+      position: relative;
+      box-sizing: content-box;
+      animation: scaleIn 0.4s ease-out forwards;
+      margin: 10px auto;
+    }
+
+    /* FULL-SCREEN CENTERED OVERLAY */
+    .modal {
+      position: fixed;
+      inset: 0;
+      /* shorthand for top:0; right:0; bottom:0; left:0; */
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    /* CENTERED POPUP CARD */
+    .modal-content {
+      background: #ffffff;
+      padding: 24px 32px;
+      border-radius: 12px;
+      text-align: center;
+      animation: popIn 0.3s ease-out;
+      box-sizing: border-box;
+
+      /* key for perfect centering of everything inside */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+
+      min-width: 260px;
+      max-width: 320px;
+    }
+
+    /* CBDC Payment Success Animation */
+    .checkmark {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      display: block;
+      /* important: block + margin auto */
+      border: 4px solid #10B981;
+      position: relative;
+      box-sizing: content-box;
+      animation: scaleIn 0.4s ease-out forwards;
+      margin: 10px auto 14px auto;
+      /* centers horizontally */
+    }
+
+    .checkmark::after {
+      content: "";
+      position: absolute;
+      top: 18px;
+      left: 12px;
+      width: 20px;
+      height: 40px;
+      border-right: 5px solid #10B981;
+      border-bottom: 5px solid #10B981;
+      transform: rotate(45deg);
+      animation: drawCheck 0.5s ease-out forwards;
+    }
+
+    @keyframes drawCheck {
+      0% {
+        height: 0;
+        width: 0;
+      }
+
+      100% {
+        height: 40px;
+        width: 20px;
+      }
+    }
+
+    @keyframes scaleIn {
+      0% {
+        transform: scale(0.1);
+        opacity: 0;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1a3c64;
+      --accent: #ff8c42;
+      --secondary: #20bfa9;
+      --bg: #f7f9fc;
+      --surface: #ffffff;
+      --text: #222831;
+      --muted: #6b7280;
+      --success: #10b981;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --shadow: 0 10px 30px rgba(16, 24, 40, 0.08);
+      --radius: 12px;
+      --gold: #c5a66a;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e5e7eb;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .logo {
+      width: auto;
+      height: 36px;
+    }
+
+    .logo-img {
+      height: 100%;
+      width: auto;
+    }
+
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-accent:hover {
+      background: #f97316;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid #e5e7eb;
+    }
+
+    .btn-ghost:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .user-status {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .user-status.show {
+      display: flex;
+    }
+
+    .user-avatar {
+      width: 24px;
+      height: 24px;
+      background: var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      font-size: 12px;
+      padding: 4px 8px;
+      margin-left: 8px;
+    }
+
+    /* NOTIFICATION */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 20px;
+      background: var(--success);
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 10001;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      max-width: 300px;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.error {
+      background: var(--error);
+    }
+
+    .notification.warning {
+      background: var(--warning);
+    }
+
+    /* SECTIONS */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    section {
+      padding: 60px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-title h2 {
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 16px;
+    }
+
+    .section-title p {
+      font-size: 1.1rem;
+      color: var(--muted);
+    }
+
+    /* DONATION FORM */
+    .donation-section {
+      background: white;
+      margin: 40px 0;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .donation-container {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 32px;
+      padding: 32px;
+    }
+
+    .login-required {
+      display: none;
+      background: #fef3c7;
+      border: 2px solid var(--warning);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .login-required.show {
+      display: block;
+    }
+
+    .login-required h3 {
+      margin: 0 0 8px;
+      color: #92400e;
+    }
+
+    .login-required p {
+      margin: 0 0 16px;
+      color: #a16207;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--secondary);
+      box-shadow: 0 0 0 3px rgba(32, 191, 169, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .donation-info {
+      background: #f8fafc;
+      padding: 24px;
+      border-radius: var(--radius);
+    }
+
+    .donation-info h3 {
+      margin: 0 0 16px;
+      color: var(--primary);
+    }
+
+    .donation-info ul {
+      margin: 0 0 20px;
+      padding-left: 20px;
+    }
+
+    .donation-info li {
+      margin-bottom: 8px;
+      color: var(--muted);
+    }
+
+    /* CERTIFICATE STYLES */
+    .certificate-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .certificate {
+      background: #ffffff;
+      border-radius: var(--radius);
+      text-align: center;
+      position: relative;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 3px solid var(--gold);
+      padding: 48px;
+    }
+
+    .certificate::before,
+    .certificate::after {
+      content: '';
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      background-image: linear-gradient(45deg, var(--gold) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--gold) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--gold) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--gold) 75%);
+      background-size: 20px 20px;
+      background-position: 0 0;
+      opacity: 0.1;
+      z-index: 1;
+    }
+
+    .certificate::before {
+      top: -50px;
+      left: -50px;
+    }
+
+    .certificate::after {
+      bottom: -50px;
+      right: -50px;
+      transform: rotate(180deg);
+    }
+
+    .certificate h2 {
+      font-family: 'Montserrat', sans-serif;
+      color: #333;
+      font-size: 2rem;
+      font-weight: 300;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .certificate .cert-subtitle {
+      font-size: 1rem;
+      color: #777;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .certificate .cert-content {
+      margin: 32px 0;
+      color: #555;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cert-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      color: var(--primary);
+      font-weight: 700;
+      margin: 24px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cert-details {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 40px auto;
+      text-align: center;
+      max-width: 80%;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cert-detail {
+      padding: 12px 0;
+      border-top: 1px solid #eee;
+    }
+
+    .cert-detail strong {
+      display: block;
+      color: #333;
+      margin-bottom: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .cert-detail span {
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .donation-container {
+        grid-template-columns: 1fr;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links a:not(.btn) {
+        display: none;
+      }
+
+      .cert-details {
+        flex-direction: column;
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Notification -->
+  <div id="notification" class="notification"></div>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{{ url_for('home') }}" class="brand">
+        <div class="logo">
+          <img src="{{ url_for('static', filename='images/daansetu_logo.png') }}" alt="DaanSetu Logo" class="logo-img">
+        </div> <span>DaanSetu</span>
+      </a>
+      <div class="nav-links">
+        {% if session.get("user_id") %}
+        <div class="user-status show">
+          <div class="user-avatar">{{ session['username'][0] }}</div>
+          <span>{{ session['username'] }}</span>
+          <a class="btn btn-ghost logout-btn" href="{{ url_for('logout') }}">Logout</a>
+        </div>
+        {% else %}
+        <a class="btn btn-primary" href="{{ url_for('home') }}">Login</a>
+        {% endif %}
+      </div>
+
+      <!-- Login Button (Shown by default)
+      <a class="btn btn-primary" id="loginBtn" href="{{ url_for('home') }}">Login</a>
+      <a class="btn btn-accent" href="{{ url_for('ngos') }}">Explore NGOs</a>
+    </div>
+    </div> -->
+  </nav>
+
+
+
+  <!-- Donation Section -->
+  <section id="donate">
+    <div class="container">
+      <div class="section-title">
+        <h2>Make a Donation</h2>
+        <p>Transparent, secure, and aligned with SDG goals</p>
+      </div>
+
+      <div class="donation-section">
+        <!-- Login Required Message -->
+        <div id="loginRequired" class="login-required">
+          <h3>🔐 Login Required</h3>
+          <p>Please login or create an account to make a donation and receive your certificate.</p>
+          <a class="btn btn-warning" href="{{ url_for('home') }}">Login / Sign Up</a>
+        </div>
+
+        <div class="donation-container">
+          <div>
+            <form id="donationForm" action="{{ url_for('donation_collect') }}" method="POST">
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" id="donorName" name="full_name"
+                    value="{% if session.get('username') %}{{ session['username'] }}{% endif %}" required>
+
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="donorEmail" name="email"
+                    value="{% if session.get('user_email') %}{{ session['user_email'] }}{% endif %}" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Select NGO</label>
+                  <select id="ngo" name="ngo_name" required>
+                    <option value="">Choose an NGO</option>
+                    <option value="TeachEveryChild">TeachEveryChild</option>
+                    <option value="ZeroHunger India">ZeroHunger India</option>
+                    <option value="Health4All">Health4All</option>
+                    <option value="CleanWater Mission">CleanWater Mission</option>
+                    <option value="Women Empowerment Trust">Women Empowerment Trust</option>
+                    <option value="Green Earth Foundation">Green Earth Foundation</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Donation Type</label>
+                  <select id="donationType" name="donation_type" required>
+                    <option value="">Choose type</option>
+                    <option value="One-time">One-time</option>
+                    <option value="Monthly">Monthly</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Payment Method (CBDC Only) 💠</label>
+                  <select id="paymentMethod" name="payment_method" required>
+                    <option value="">Select CBDC Payment</option>
+                    <option value="CBDC">Digital Rupee (CBDC)</option>
+                  </select>
+
+                  <small style="color:#007bff; display:block; margin-top:5px;">
+                    Secure Digital Rupee transfer directly from CBDC wallet — corruption-free donation.
+                  </small>
+                </div>
+
+                <div class="form-group">
+                  <label>Amount (₹)</label>
+                  <input type="number" id="amount" name="amount" min="50" step="50" placeholder="1000" required>
+                </div>
+              </div>
+
+
+
+              <div class="form-group">
+                <label>Message (Optional)</label>
+                <textarea id="message" name="message" rows="3" placeholder="Leave a note for the NGO"></textarea>
+              </div>
+              <!-- CBDC Payment Trigger Button -->
+              <button type="button" class="btn btn-success" style="width:100%; margin-bottom:10px;"
+                onclick="startCBDCPayment()">
+                Donate with Digital Rupee 💠
+              </button>
+
+              <!-- Actual Submit Button (disabled initially) -->
+              <button type="submit" id="submitDonationBtn" class="btn btn-accent" style="width: 100%;" disabled>
+                🎁 Donate & Get Certificate
+              </button>
+
+            </form>
+
+          </div>
+          <div class="donation-info">
+            <h3>Where Your Money Goes</h3>
+            <ul>
+              <li>Direct program costs (meals, books, medicine)</li>
+              <li>Monitoring & impact reporting</li>
+              <li>Operational costs (capped at 15%)</li>
+            </ul>
+            <div style="background: #e0f2fe; padding: 16px; border-radius: 8px; margin-top: 16px;">
+              <strong>🛡️ Secure:</strong> All donations are encrypted and PCI-compliant.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CBDC Payment Modal -->
+  <div id="cbdcModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Processing Digital Rupee Payment...</h3>
+      <p>Secure CBDC Verification 🔐</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- Certificate Section -->
+  <section id="certificateSection" class="certificate-section">
+    <div class="container">
+      <div class="certificate">
+        <h2>🏆 Certificate of Appreciation</h2>
+        <div class="cert-content">
+          <p>This certificate is presented to</p>
+          <div class="cert-name" id="certName">Donor Name</div>
+          <p>for supporting <strong id="certNGO">NGO Name</strong> with a generous donation of <strong>₹<span
+                id="certAmount">0</span></strong> on <span id="certDate">Date</span>.</p>
+          <p><em>Thank you for contributing to SDG 1 (No Poverty) and making a positive impact!</em></p>
+        </div>
+        <div class="cert-details">
+          <div class="cert-detail">
+            <strong>Donation Type:</strong> <span id="certType">One-time</span>
+          </div>
+          <div class="cert-detail">
+            <strong>Receipt ID:</strong> <span id="certId">DON-12345</span>
+          </div>
+        </div>
+        <div style="margin-top: 24px;">
+          <button class="btn btn-primary" onclick="window.print()">📄 Download Certificate</button>
+          <a class="btn btn-ghost" href="{{ url_for('home') }}">🏠 Back to Home</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Utility: Notification popup
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = `notification ${type} show`;
+
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 4000);
+    }
+
+    // Utility: Unique donation ID
+    function generateId() {
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).slice(2, 5).toUpperCase();
+      return `DON-${timestamp}-${random}`;
+    }
+
+    // Utility: Format date
+    function formatDate(date = new Date()) {
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    // Submit donation form → send to Flask backend
+    document.getElementById('donationForm').addEventListener('submit', async function (e) {
+      e.preventDefault(); // AJAX request
+
+      const name = document.getElementById('donorName').value.trim();
+      const email = document.getElementById('donorEmail').value.trim();
+      const ngo = document.getElementById('ngo').value;
+      const donationType = document.getElementById('donationType').value;
+      const amount = parseInt(document.getElementById('amount').value, 10) || 0;
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      const message = document.getElementById('message').value.trim();
+
+      if (!name || !email || !ngo || !donationType || amount <= 0 || !paymentMethod) {
+        showNotification('Please fill in all required fields.', 'error');
+        return;
+      }
+
+      if (amount < 50) {
+        showNotification('Minimum donation amount is ₹50.', 'error');
+        return;
+      }
+
+      showNotification('Processing your donation...', 'success');
+
+      const formData = new FormData();
+      formData.append('full_name', name);
+      formData.append('email', email);
+      formData.append('ngo_name', ngo);
+      formData.append('donation_type', donationType);
+      formData.append('amount', amount);
+      formData.append('payment_method', paymentMethod);
+      formData.append('message', message);
+
+      try {
+        const response = await fetch('/donation', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('Server error');
+
+        // Show Certificate after success
+        setTimeout(() => {
+          document.getElementById('certName').textContent = name;
+          document.getElementById('certNGO').textContent = ngo;
+          document.getElementById('certAmount').textContent = amount.toLocaleString('en-IN');
+          document.getElementById('certType').textContent = donationType;
+          document.getElementById('certDate').textContent = formatDate();
+          document.getElementById('certId').textContent = generateId();
+
+          document.getElementById('donate').style.display = 'none';
+          document.getElementById('certificateSection').style.display = 'block';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          showNotification(`🎉 Thank you for your donation!`, 'success');
+        }, 2000);
+
+      } catch (err) {
+        console.error(err);
+        showNotification('⚠️ Could not save donation. Try again later.', 'error');
+      }
+    });
+
+    function startCBDCPayment() {
+
+      // 🔍 Validate form before starting CBDC payment
+      const name = document.getElementById('donorName').value.trim();
+      const email = document.getElementById('donorEmail').value.trim();
+      const ngo = document.getElementById('ngo').value;
+      const donationType = document.getElementById('donationType').value;
+      const amount = parseInt(document.getElementById('amount').value, 10);
+      const paymentMethod = document.getElementById('paymentMethod').value;
+
+      if (!name || !email || !ngo || !donationType || !amount || amount < 50 || !paymentMethod) {
+        showNotification('❌ Please fill all fields before making a CBDC payment.', 'error');
+        return;
+      }
+
+      const modal = document.getElementById("cbdcModal");
+      modal.style.display = "flex";
+
+      setTimeout(() => {
+        modal.innerHTML = `
+      <div class="modal-content">
+        <div class="checkmark"></div>
+        <h3>Payment Successful 💠</h3>
+        <p>Transaction ID: TXN${Math.floor(Math.random() * 1000000)}</p>
+        <p>Thank you for a corruption-free donation 🙏</p>
+        <button onclick="completeDonation()" class="btn btn-primary">Continue</button>
+      </div>
+    `;
+      }, 2000);
+    }
+
+
+    function completeDonation() {
+      const submitBtn = document.getElementById("submitDonationBtn");
+      submitBtn.disabled = false;  // Allow real form submission
+      submitBtn.click();           // Auto-submit form
+      document.getElementById("cbdcModal").style.display = "none"; // Close modal
+    }
+
+
+  </script>
+
+</body>
+
+</html>
